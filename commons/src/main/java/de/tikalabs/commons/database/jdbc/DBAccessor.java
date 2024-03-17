@@ -5,6 +5,8 @@ import de.tikalabs.commons.database.mapper.ResultSetExtractor;
 import de.tikalabs.commons.database.mapper.RowMapper;
 import de.tikalabs.commons.database.mapper.RowMapperResultSetExtractor;
 import de.tikalabs.commons.database.mapper.SingleColumnRowMapper;
+import de.tikalabs.commons.database.querybuilder.DynamicQueryBuilder;
+import de.tikalabs.commons.database.querybuilder.QueryCondition;
 import de.tikalabs.commons.database.utils.DBUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,8 @@ public class DBAccessor implements DBOperations {
     // Erstellen Sie ein Logger-Objekt für die Klasse MyClass
     private static final Logger logger = LoggerFactory.getLogger(DBAccessor.class);
 
+    private final DynamicQueryBuilder dynamicQueryBuilder;
+
     private DataSource dataSource = null;
     private Connection con = null;
     private String message = null;
@@ -32,6 +36,7 @@ public class DBAccessor implements DBOperations {
 
     public DBAccessor(DataSource datasource) {
         this.setDataSource(datasource);
+        this.dynamicQueryBuilder = new DynamicQueryBuilder(this); // Hier wird die Komposition hergestellt
 
     }
 
@@ -42,6 +47,12 @@ public class DBAccessor implements DBOperations {
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
         this.setConnection(dataSource);
+    }
+
+    // Methode, die DynamicQueryBuilder verwendet
+    public <T> List<T> executeDynamicQuery(String tableName, List<QueryCondition> conditions, RowMapper<T> rowMapper) throws SQLException {
+        // Hier könntest du DynamicQueryBuilder verwenden, um die Abfrage durchzuführen
+        return this.dynamicQueryBuilder.executeDynamicQuery(tableName, conditions, rowMapper);
     }
 
     @Override
@@ -172,7 +183,7 @@ public class DBAccessor implements DBOperations {
         return null;
     }
 
-    private PreparedStatement createPreparedStatement(String sql, Object[] params) {
+    public PreparedStatement createPreparedStatement(String sql, Object[] params) {
         PreparedStatement statement;
         try {
             statement = this.getConnection().prepareStatement(sql);
@@ -243,7 +254,7 @@ public class DBAccessor implements DBOperations {
         try {
             statement = createPreparedStatement(sql, params);
             if (statement == null) {
-                logger.error("Failed to insert the record: PreparedStatement cannot be null." );
+                logger.error("Failed to insert the record: PreparedStatement cannot be null.");
                 return false;
             }
             // executeUpdate() gibt die Anzahl der geänderten Zeilen zurück
