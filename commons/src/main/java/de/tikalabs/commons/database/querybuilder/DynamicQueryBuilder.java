@@ -21,11 +21,24 @@ public class DynamicQueryBuilder<T> {
 
         StringBuilder queryBuilder = new StringBuilder("SELECT * FROM " + tableName + " WHERE ");
         List<Object> parameters = new ArrayList<>();
-
+        
         for (int i = 0; i < conditions.size(); i++) {
             QueryCondition condition = conditions.get(i);
-            queryBuilder.append(condition.getColumn()).append(" ").append(condition.getOperator()).append(" ?");
-            parameters.add(condition.getValue());
+
+            if (condition.getOperator().equals("IN") && condition.getValues() != null) {
+                queryBuilder.append(condition.getColumn()).append(" IN (");
+                for (int j = 0; j < condition.getValues().size(); j++) {
+                    queryBuilder.append("?");
+                    parameters.add(condition.getValues().get(j));
+                    if (j < condition.getValues().size() - 1) {
+                        queryBuilder.append(", ");
+                    }
+                }
+                queryBuilder.append(")");
+            } else {
+                queryBuilder.append(condition.getColumn()).append(" ").append(condition.getOperator()).append(" ?");
+                parameters.add(condition.getValue());
+            }
 
             if (i < conditions.size() - 1) {
                 queryBuilder.append(" AND ");
