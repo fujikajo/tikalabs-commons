@@ -1,6 +1,7 @@
 package de.tikalabs.commons.csv.utils;
 
 import de.tikalabs.commons.csv.recordprocessor.ListRecordProcessor;
+import de.tikalabs.commons.csv.recordprocessor.ProgressCallback;
 import de.tikalabs.commons.csv.recordprocessor.RecordProcessor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -20,6 +21,7 @@ public abstract class AbstractCSVParser<T> {
     private List<String> headerNames;
     private int desiredHeaderIndex;
     private RecordProcessor<T> recordProcessor; // Verarbeitungslogik
+    private ProgressCallback progressCallback;
 
     protected AbstractCSVParser(String filePath) {
         this.filePath = filePath;
@@ -45,8 +47,15 @@ public abstract class AbstractCSVParser<T> {
         this.recordProcessor = recordProcessor;
     }
 
+    // Setter für den Callback
+    public void setProgressCallback(ProgressCallback progressCallback) {
+        this.progressCallback = progressCallback;
+    }
+
     public void parseCSV() {
         int i = 0;
+
+
         for (CSVRecord csvRecord : getCsvParser()) {
 
             if (recordProcessor != null) {
@@ -54,6 +63,9 @@ public abstract class AbstractCSVParser<T> {
                 System.out.println("Datensatz: " + i);
             }
             i++;
+            /*if (progressCallback != null) {
+                progressCallback.updateProgress(i, totalRecords);
+            }*/
         }
 
     }
