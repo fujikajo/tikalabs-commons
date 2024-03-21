@@ -5,39 +5,48 @@ import de.tikalabs.commons.database.servicelayer.IServiceLayer;
 import java.util.List;
 
 
-
 public abstract class DatabaseRecordProcessor<T> implements RecordProcessor<T> {
 
-	private IServiceLayer<T> service;
-	private List<String> columnNames;
+    private IServiceLayer<T> service;
+    private String tableName;
+    private List<String> columnNames;
 
-	public DatabaseRecordProcessor(IServiceLayer<T> service) {
-		this.setService(service);
-	}
+    public DatabaseRecordProcessor(String tableName, IServiceLayer<T> service) {
+        this.setService(service);
+        this.setTableName(tableName);
+    }
 
-	@Override
-	public void process(T record) {
-		// Rufe die abstrakte Methode auf, die in der Unterklasse implementiert werden
-		// muss
-		saveToEmbeddedDB(record);
-	}
+    public String getTableName() {
+        return tableName;
+    }
 
-	// Abstrakte Methode, die jede Unterklasse implementieren muss
-	protected abstract void saveToEmbeddedDB(T record);
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
 
-	public IServiceLayer<T> getService() {
-		return service;
-	}
+    @Override
+    public void process(T record) {
+        // Rufe die abstrakte Methode auf, die in der Unterklasse implementiert werden
+        // muss
+        saveToEmbeddedDB(record);
+    }
 
-	public void setService(IServiceLayer<T> service) {
-		this.service = service;
-	}
+    // Abstrakte Methode, die jede Unterklasse implementieren muss
+    protected abstract void saveToEmbeddedDB(T record);
 
-	public List<String> getColumnNames() {
-		return columnNames;
-	}
+    public IServiceLayer<T> getService() {
+        return service;
+    }
 
-	public void setColumnNames(List<String> columnNames) {
-		this.columnNames = columnNames;
-	}
+    public void setService(IServiceLayer<T> service) {
+        this.service = service;
+    }
+
+    public List<String> getColumnNames() {
+        return columnNames;
+    }
+
+    public void setColumnNames(List<String> columnNames) {
+        this.columnNames = columnNames;
+    }
 }

@@ -50,9 +50,14 @@ public class DBAccessor implements DBOperations {
     }
 
     // Methode, die DynamicQueryBuilder verwendet
-    public <T> List<T> executeDynamicQuery(String tableName, List<QueryCondition> conditions, RowMapper<T> rowMapper) throws SQLException {
+    public <T> List<T> executeDynamicQuery(String tableName, List<QueryCondition> conditions, RowMapper<T> rowMapper) {
         // Hier könntest du DynamicQueryBuilder verwenden, um die Abfrage durchzuführen
-        return this.dynamicQueryBuilder.executeDynamicQuery(tableName, conditions, rowMapper);
+        try {
+            return this.dynamicQueryBuilder.executeDynamicQuery(tableName, conditions, rowMapper);
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+        return null;
     }
 
     @Override
@@ -237,16 +242,17 @@ public class DBAccessor implements DBOperations {
             return affectedRows > 0; // true, wenn Zeilen betroffen sind, also Update erfolgreich
         } catch (SQLException e) {
             if (e.getErrorCode() == 1062) {
-                return false; // Update fehlgeschlagen aufgrund von einem Duplikat
+                logger.error(e.getMessage()); // Update fehlgeschlagen aufgrund von einem Duplikat
             } else {
                 // Update fehlgeschlagen aufgrund eines anderen Fehlers
                 logger.error(e.getMessage());
-                return false;
+
             }
         } finally {
             DBUtils.closeStatement(statement);
         }
 
+        return false;
     }
 
     public boolean insert(String sql, Object... params) {
@@ -269,25 +275,6 @@ public class DBAccessor implements DBOperations {
         }
     }
 
-    /**
-     * Legt eine neue Datenbanktabelle an.
-     *
-     * @param tableName   Tabellenname
-     * @param columnNames Spaltennamen
-     */
-    public void createTable(final String tableName, final List<String> columnNames) {
-
-        StringBuilder query = new StringBuilder().append("CREATE TABLE ").append(tableName).append(" (");
-        String prefix = "";
-        for (String columnName : columnNames) {
-            query.append(prefix);
-            query.append(columnName).append(" varchar(255)");
-            prefix = ",";
-        }
-        query.append(")");
-
-        update(query.toString());
-    }
 
     protected <T> RowMapper<T> getSingleColumnRowMapper(Class<T> requiredType) {
         return new SingleColumnRowMapper<T>(requiredType);

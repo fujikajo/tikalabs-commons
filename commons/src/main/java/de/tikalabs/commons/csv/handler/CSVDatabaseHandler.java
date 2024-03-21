@@ -10,16 +10,26 @@ public class CSVDatabaseHandler {
     private final EmbeddedDBService service;
     private CSVDatabaseRecordProcessor recordProcessor;
     private CustomCSVParser csvParser;
+    private String tableName;
 
-    public CSVDatabaseHandler(EmbeddedDBService service, String filePath, int headerIndex) {
+    public CSVDatabaseHandler(String tableName, EmbeddedDBService service, String filePath, int headerIndex) {
         this.service = service;
-        this.setRecordProcessor(new CSVDatabaseRecordProcessor(this.service));
+        this.setTableName(tableName);
+        this.setRecordProcessor(new CSVDatabaseRecordProcessor(tableName, this.service));
         this.setCsvParser(new CustomCSVParser(filePath, this.recordProcessor, headerIndex));
 
     }
 
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
     public void execute() {
-        this.service.createTable(getCsvParser().getHeaderNames());
+        this.service.createTable(getTableName(), getCsvParser().getHeaderNames());
         this.getCsvParser().parseCSV();
 
     }

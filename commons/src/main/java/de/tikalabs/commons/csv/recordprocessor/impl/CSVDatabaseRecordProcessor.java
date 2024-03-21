@@ -8,15 +8,16 @@ import java.util.Map;
 
 public class CSVDatabaseRecordProcessor extends DatabaseRecordProcessor<Map<String, String>> {
 
-    public CSVDatabaseRecordProcessor(IServiceLayer<Map<String, String>> embeddedDBservice) {
-        super(embeddedDBservice);
+
+    public CSVDatabaseRecordProcessor(String tableName, IServiceLayer<Map<String, String>> embeddedDBService) {
+        super(tableName, embeddedDBService);
 
     }
 
     @Override
     protected void saveToEmbeddedDB(Map<String, String> record) {
-        final boolean b = this.getService().addRow(record);
-        // if (b) System.out.println("Datensatz in die Datenbank geschrieben: " + record.get("VERS_NR"));
+        final boolean b = this.getService().insert(this.getTableName(), record);
+        if (b) System.out.println("Datensatz in die Datenbank geschrieben: " + record.get("VERS_NR"));
     }
 
 }
