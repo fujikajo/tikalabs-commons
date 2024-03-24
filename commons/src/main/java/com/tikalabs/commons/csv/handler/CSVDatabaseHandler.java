@@ -12,12 +12,8 @@ public class CSVDatabaseHandler {
     private CustomCSVParser csvParser;
     private String tableName;
 
-    public CSVDatabaseHandler(String tableName, EmbeddedDBService service, String filePath, int headerIndex) {
+    public CSVDatabaseHandler(EmbeddedDBService service) {
         this.service = service;
-        this.setTableName(tableName);
-        this.setRecordProcessor(new CSVDatabaseRecordProcessor(tableName, this.service));
-        this.setCsvParser(new CustomCSVParser(filePath, this.recordProcessor, headerIndex));
-
     }
 
     public String getTableName() {
@@ -33,6 +29,20 @@ public class CSVDatabaseHandler {
         this.getCsvParser().parseCSV();
 
     }
+
+    public void load(String tableName, String csvFilePath, int headerIndex) {
+
+
+        // Setze den Tabellennamen und den Dateipfad für den aktuellen Ladevorgang
+        this.setTableName(tableName);
+        this.setRecordProcessor(new CSVDatabaseRecordProcessor(tableName, this.service));
+        this.setCsvParser(new CustomCSVParser(csvFilePath, this.recordProcessor, headerIndex)); // Angenommen, der headerIndex ist immer 8, anpassen falls nötig
+
+        // Erstelle die Tabelle in der Datenbank und lade die CSV-Daten
+        this.service.createTable(getTableName(), getCsvParser().getHeaderNames());
+        this.getCsvParser().parseCSV();
+    }
+
 
     public CSVDatabaseRecordProcessor getRecordProcessor() {
         return recordProcessor;
