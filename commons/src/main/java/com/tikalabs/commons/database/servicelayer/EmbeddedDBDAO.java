@@ -103,4 +103,9 @@ public class EmbeddedDBDAO {
         // Nutze den DBAccessor, um die Abfrage auszuführen und das Ergebnis zu erhalten
         return accessor.queryForInt(query);
     }
+    
+    public boolean createIndex(String tableName, String indexName) {
+		String query = "CREATE INDEX " + indexName + " ON " + tableName + "(VERS_NR, NR_VTT);";
+		return accessor.update(query);
+	}
 }
