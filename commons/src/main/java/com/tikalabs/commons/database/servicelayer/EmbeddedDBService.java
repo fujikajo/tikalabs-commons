@@ -118,4 +118,8 @@ public class EmbeddedDBService implements IServiceLayer<Map<String, String>> {
     public int count(String tableName) {
         return this.getEmbeddedDBDAO().countRecords(tableName);
     }
+
+    public boolean createIndex(String tableName, String indexName) {
+		return this.getEmbeddedDBDAO().createIndex(tableName, indexName);
+	}
 }
