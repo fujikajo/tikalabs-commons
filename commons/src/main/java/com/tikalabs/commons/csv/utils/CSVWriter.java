@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.lang.reflect.Field;
 
 package de.mv.mathdev.commons.csv;
 
@@ -128,6 +129,43 @@ public class CSVWriter {
 				writer.write(dataLine);
 				writer.newLine();
 			}
+		}
+	}
+
+	public <T> void writeDataToCsv(List<T> records, String csvFilePath,Class<T> typeClass)  {
+		if (records == null || records.isEmpty()) {
+			logger.info("Keine Daten vorhanden zum Schreiben in die CSV-Datei.");
+			return;
+		}
+
+		// Extrahiere die Feldnamen der Klasse T (nimmt an, dass alle Objekte vom selben Typ sind)
+		Field[] fields = records.get(0).getClass().getDeclaredFields();
+		List<String> headers = Arrays.stream(fields).map(Field::getName).collect(Collectors.toList());
+
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath))) {
+			// Schreibe die Headerzeile
+			writer.write(String.join(";", headers));
+			writer.newLine();
+
+			// Schreibe die Datenzeilen
+			for (T record : records) {
+				List<String> values = Arrays.stream(fields)
+						.map(field -> {
+							try {
+								field.setAccessible(true);
+								return field.get(record) != null ? field.get(record).toString() : "";
+							} catch (IllegalAccessException e) {
+								logger.error("Fehler beim Zugriff auf das Feld: " + field.getName(), e);
+								return "";
+							}
+						})
+						.collect(Collectors.toList());
+				writer.write(String.join(";", values));
+				writer.newLine();
+			}
+		} catch (IOException e) {
+			logger.error("Fehler beim Schreiben der CSV-Datei", e);
+
 		}
 	}
 }
